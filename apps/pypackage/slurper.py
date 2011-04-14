@@ -14,9 +14,7 @@ from django.template.defaultfilters import slugify
 
 from package.models import Category, Package, Version
 from package.repos import get_repo_for_repo_url
-from pypi.versioning import highest_version
-
-from celery.decorators import task
+from pypackage.versioning import highest_version
 
 base_url = "http://pypi.python.org/pypi/"
 PYPI = xmlrpclib.Server(base_url)

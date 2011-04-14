@@ -18,7 +18,7 @@ from distutils.version import LooseVersion as versioner
 
 from package.fields import CreationDateTimeField, ModificationDateTimeField
 from package.repos import github
-from package.pypi import fetch_releases
+from pypackage.pypi import fetch_releases
 from package.repos import get_repo_for_repo_url
 from package.signals import signal_fetch_latest_metadata
 

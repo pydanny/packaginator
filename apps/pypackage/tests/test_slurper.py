@@ -2,7 +2,7 @@ from django.template.defaultfilters import slugify
 from django.test import TestCase
 
 from package.models import Package, Version
-from pypi.slurper import Slurper
+from pypackage.slurper import Slurper
 
 TEST_PACKAGE_NAME = 'Django'
 TEST_PACKAGE_VERSION = '1.3'
