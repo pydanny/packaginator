@@ -289,8 +289,7 @@ RESTRICT_PACKAGE_EDITORS = True
 # only django admins can delete
 RESTRICT_GRID_EDITORS = True
 
-
-
+PACKAGE_EXTENDERS = ["pypackage",]
 
 CELERYD_TASK_TIME_LIMIT = 300
 LAUNCHPAD_ACTIVE = False
@@ -316,6 +315,14 @@ if LOCAL_INSTALLED_APPS:
 SUPPORTED_REPO.extend(["bitbucket", "github"])
 if LAUNCHPAD_ACTIVE:
     SUPPORTED_REPO += ["launchpad"]
+    
+for extender in PACKAGE_EXTENDERS:
+    if not extender.endswith("package"):
+        raise Exception("The name of a package extenders must end with 'package'."
+            " This fails on '%s'" % extender)
+
+if PACKAGE_EXTENDERS:
+    INSTALLED_APPS.extend(PACKAGE_EXTENDERS)
 
 try:
     import djcelery
