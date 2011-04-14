@@ -4,6 +4,13 @@ Settings
 
 How to customize the settings to suit your needs. Do this in local_settings so patches and upstream pulls don't cause havoc to your installation
 
+PACKAGE_EXTENDERS (Default: ["pypackage", "repopackage"])
+=========================================================
+
+Originally Packaginator packages just dealt with packages stored in the Python Package Index (PyPI) and with extra data provided by common repo systems like Bitbucket, Github and Launchpad. The purpose of this setting is to remove the tight coupling used for that and allow for Packages. This abstraction is designed to allow Django apps that follow a standard interface to be plugged seamlessly into Packaginator, and unplugged - all without additional wiring in regards to settings, templates, and urls.
+
+See more details at package_extenders_.
+
 PACKAGINATOR_SEARCH_PREFIX (Default: "django")
 ==============================================
 
@@ -117,5 +124,5 @@ The follow properties can be used in templates:
 * can_delete_grid_package
 * can_edit_grid_element
 
-.. _troubleshooting: troubleshooting.html    
-
+.. _troubleshooting: troubleshooting.html
+.. _package_extenders: package_extenders.html

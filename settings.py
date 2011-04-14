@@ -232,7 +232,7 @@ EMAIL_DEBUG = DEBUG
 
 ROOT_URLCONF = "packaginator.urls"
 
-SECRET_KEY = "ud%a+c#@@d5k!t_)mpw!+58fztyhk_sq%c5s0p5_je-wixy#$k"
+SECRET_KEY = "CHANGE-THIS-KEY-TO-SOMETHING-ELSE"
 
 URCHIN_ID = ""
 
@@ -304,7 +304,12 @@ try:
     from local_settings import *
 except ImportError:
     pass
-
+    
+# You can remove this after you change your SECRET_KEY
+if SECRET_KEY == "CHANGE-THIS-KEY-TO-SOMETHING-ELSE":
+    raise Exception('You must change your SECRET_KEY settings in '
+            'local_settings.py.')
+    
 if LOCAL_INSTALLED_APPS:
     INSTALLED_APPS.extend(LOCAL_INSTALLED_APPS)
 
