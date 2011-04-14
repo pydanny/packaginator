@@ -1,3 +1,5 @@
+# TODO - get this to test off of pypackages instead of package
+
 from django.template.defaultfilters import slugify
 from django.test import TestCase
 
