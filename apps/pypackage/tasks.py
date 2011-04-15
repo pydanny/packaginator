@@ -8,7 +8,7 @@ PYPI = xmlrpclib.Server(base_url)
 
 @task()
 def get_package_from_pypi(package_name):
-    s = Slurper(package=package_name)
+    s = Slurper(package_name=package_name)
     versions = PYPI.package_releases(package_name)
     highest_version = s.get_latest_version_number(package_name, versions)
     package, created = s.get_or_create_package(package_name, highest_version)

@@ -16,7 +16,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from distutils.version import LooseVersion as versioner
 
-from package.fields import CreationDateTimeField, ModificationDateTimeField
+from core.models import BaseModel, FetchModel
 from package.repos import github
 from pypackage.pypi import fetch_releases
 from package.repos import get_repo_for_repo_url
@@ -26,16 +26,7 @@ repo_url_help_text = settings.PACKAGINATOR_HELP_TEXT['REPO_URL']
 pypi_url_help_text = settings.PACKAGINATOR_HELP_TEXT['PYPI_URL']
 category_help_text = settings.PACKAGINATOR_HELP_TEXT['CATEGORY']
 
-class NoPyPiVersionFound(Exception):
-    pass
 
-class BaseModel(models.Model):
-    """ Base abstract base class to give creation and modified times """
-    created     = CreationDateTimeField(_('created'))
-    modified    = ModificationDateTimeField(_('modified'))
-    
-    class Meta:
-        abstract = True
 
 class Category(BaseModel):
     
@@ -63,35 +54,12 @@ class Package(BaseModel):
     repo_forks      = models.IntegerField(_("repo forks"), default=0)
     repo_commits    = models.IntegerField(_("repo commits"), default=0)
     pypi_url        = models.URLField(_("PyPI slug"), help_text=pypi_url_help_text, blank=True, default='')
-    pypi_downloads  = models.IntegerField(_("Pypi downloads"), default=0)
     related_packages    = models.ManyToManyField("self", blank=True)
     participants    = models.TextField(_("Participants"),
                         help_text="List of collaborats/participants on the project", blank=True)
     usage           = models.ManyToManyField(User, blank=True)
     created_by = models.ForeignKey(User, blank=True, null=True, related_name="creator")    
     last_modified_by = models.ForeignKey(User, blank=True, null=True, related_name="modifier")
-    pypi_home_page  = models.URLField(_("homepage on PyPI for a project"), blank=True, null=True)
-    
-    @property
-    def pypi_version(self):
-        string_ver_list = self.version_set.values_list('number', flat=True)
-        if string_ver_list:
-            vers_list = [versioner(v) for v in string_ver_list]
-            latest = sorted(vers_list)[-1]
-            return str(latest)
-        return ''
-
-    @property     
-    def pypi_name(self):
-        """ return the pypi name of a package"""
-        
-        if not self.pypi_url.strip():
-            return ""
-            
-        name = self.pypi_url.replace("http://pypi.python.org/pypi/","")
-        if "/" in name:
-            return name[:name.index("/")]
-        return name
 
     @property
     def last_updated(self):
@@ -143,35 +111,17 @@ class Package(BaseModel):
     
     def fetch_metadata(self, *args, **kwargs):
         
-        # Get the downloads from pypi
-        if self.pypi_url.strip() and self.pypi_url != "http://pypi.python.org/pypi/":
-            
-            total_downloads = 0
-            
-            for release in fetch_releases(self.pypi_name):
-            
-                version, created = Version.objects.get_or_create(
-                    package = self,
-                    number = release.version
-                )
-
-                # add to total downloads
-                total_downloads += release.downloads
-
-                # add to versions
-                version.downloads = release.downloads
-                version.license = release.license
-                version.hidden = release._pypi_hidden                
-                version.save()
-            
-            self.pypi_downloads = total_downloads
+        # run fetch() method on any FetchModels attached to this.
+        # FetchModels should be things defined in settings.PACKAGE_EXTENDERS
+        # TODO - this is dirt slow. Need to figure out how to speed it up
+        for obj_name in dir(self):
+            obj = getattr(self, obj_name, None)
+            if isinstance(obj, FetchModel):
+                obj.fetch_metadata()
         
         self.repo.fetch_metadata(self)
         signal_fetch_latest_metadata.send(sender=self)
         self.save()        
-
-    def fetch_commits(self):
-        self.repo.fetch_commits(self)
 
     class Meta:
         ordering = ['title']
@@ -207,32 +157,4 @@ class Commit(BaseModel):
         ordering = ['-commit_date']
         
     def __unicode__(self):
-        return "Commit for '%s' on %s" % (self.package.title, unicode(self.commit_date))    
-        
-class VersionManager(models.Manager):
-    def by_version(self, *args, **kwargs):
-        qs = self.get_query_set().filter(*args, **kwargs)
-        return sorted(qs,key=lambda v: versioner(v.number))
-
-class Version(BaseModel):
-    
-    package = models.ForeignKey(Package, blank=True, null=True)
-    number = models.CharField(_("Version"), max_length="100", default="", blank="")
-    downloads = models.IntegerField(_("downloads"), default=0)
-    license = models.CharField(_("license"), max_length="100")
-    hidden = models.BooleanField(_("hidden"), default=False)    
-    
-    objects = VersionManager()
-
-    class Meta:
-        get_latest_by = 'created'
-        ordering = ['-created']
-
-    def save(self, *args, **kwargs):
-        if len(self.license) > 20:
-            self.license = "Custom"
-        super(Version, self).save(*args, **kwargs)
-
-    def __unicode__(self):
-        return "%s: %s" % (self.package.title, self.number)
-    
+        return "Commit for '%s' on %s" % (self.package.title, unicode(self.commit_date))

@@ -101,26 +101,6 @@ if settings.LAUNCHPAD_ACTIVE:
             self.assertTrue(package.repo_forks > 0)
             self.assertEqual(package.participants, 'canonical-isd-hackers')
 
-'''
-class TestSourceforgeRepo(TestCase):
-    def setUp(self):
-        self.package = Package.objects.create(
-            title="django-ui",
-            slug="django-ui",
-            repo_url="http://sourceforge.net/projects/django-ui/",
-        )
-
-    def test_fetch_commits(self):
-	self.assertEqual(Commit.objects.count(), 0)
-	sourceforge_handler.fetch_commits(self.package)
-        self.assertEqual(Commit.objects.count(), 0)
-
-    def test_fetch_metadata(self):
-        package = sourceforge_handler.fetch_metadata(self.package)
-        self.assertTrue(package.repo_watchers > 0)
-        self.assertTrue(package.repo_forks > 0)
-        self.assertEqual(package.participants, '')'''
-
 class TestRepos(BaseBase):
     def test_repo_registry(self):
         from package.repos import get_repo, supported_repos

@@ -17,25 +17,15 @@ from django.core.exceptions import ObjectDoesNotExist
 from distutils.version import LooseVersion as versioner
 
 from core.fields import CreationDateTimeField, ModificationDateTimeField
+from core.models import BaseModel, FetchModel
 from package.models import Package
 from pypackage.pypi import fetch_releases
 
 pypi_url_help_text = settings.PACKAGINATOR_HELP_TEXT['PYPI_URL']
 
-class NoPyPiVersionFound(Exception):
-    pass
-
-class BaseModel(models.Model):
-    """ Base abstract base class to give creation and modified times """
-    created     = CreationDateTimeField(_('created'))
-    modified    = ModificationDateTimeField(_('modified'))
+class PyPackage(FetchModel):
     
-    class Meta:
-        abstract = True
-        
-class PyPackage(BaseModel):
-    
-    package = models.OneToOneField(Package, related_name='package')    
+    package = models.OneToOneField(Package)    
     pypi_url        = models.URLField(_("PyPI url for project"), help_text=pypi_url_help_text, blank=True, default='')
     pypi_slug        = models.SlugField(_("PyPI slug project"), help_text=_("pypi slug"), blank=True, default='')
     pypi_downloads  = models.IntegerField(_("Pypi downloads"), default=0)
@@ -79,11 +69,12 @@ class PyPackage(BaseModel):
         if self.pypi_url.strip() and self.pypi_url != "http://pypi.python.org/pypi/":
             
             total_downloads = 0
+
             
             for release in fetch_releases(self.pypi_name):
             
                 version, created = Version.objects.get_or_create(
-                    package = self,
+                    pypackage = self,
                     number = release.version
                 )
 
@@ -98,7 +89,6 @@ class PyPackage(BaseModel):
             
             self.pypi_downloads = total_downloads
         
-        self.repo.fetch_metadata(self)
         self.save()
         
     def save(self, *args, **kwargs):
@@ -106,7 +96,7 @@ class PyPackage(BaseModel):
         super(PyPackage, self).save(*args, **kwargs)        
 
     class Meta:
-        ordering = ['pypi_slug']
+        ordering = ['-pypi_downloads', 'pypi_slug',]
     
     def __unicode__(self):
         
@@ -141,5 +131,5 @@ class Version(BaseModel):
         super(Version, self).save(*args, **kwargs)
 
     def __unicode__(self):
-        return "%s: %s" % (self.package.title, self.number)
+        return "%s: %s" % (self.pypackage.package.title, self.number)
     
