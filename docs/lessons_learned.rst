@@ -76,3 +76,10 @@ Pull Requests
 * Each time someone submits a pull request, ask them if they've run the full test suite. Yeah, it's repetitive but they'll thank you for it.
 
 * If someone submits a broken pull request, see if you can work out the issue with them. If the problem is not easily corrected, ask them to fix the problem and resubmit the pull request.
+
+OS Hackathon 2
+==============
+
+ * Pick some operating systems to support and stick with them. If someone wants to use an obscure operating system, don't spend any time supporting them. Operating system ninjas should be able to figure out this stuff on their own.
+ 
+ * Fixtures are useful but break down in complex changes. Better to use make/mock scripts to create test data. More work up front but less agony later.
