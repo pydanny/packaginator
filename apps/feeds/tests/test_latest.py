@@ -1,13 +1,19 @@
 from django.test import TestCase
 from django.core.urlresolvers import reverse
-from package.models import Package
+
+from core.test_utils import mock
 
 import feedparser
 
+from package.models import Package
+
+
+
 class LatestFeedsTest(TestCase):
-    fixtures = ['test_initial_data.json']
 
     def test_latest_feeds(self):
+        
+        mock.make()
 
         packages = Package.objects.all().order_by('-created')[:15]
 

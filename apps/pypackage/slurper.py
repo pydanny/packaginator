@@ -8,8 +8,11 @@ PyPI interface (see http://wiki.python.org/moin/PyPiXmlRpc)
 from datetime import datetime
 import itertools
 import re
+import sys
+from xml.parsers.expat import ExpatError
 import xmlrpclib
 
+from django.conf import settings
 from django.template.defaultfilters import slugify
 
 from package.models import Category, Package
@@ -32,7 +35,14 @@ class Slurper(object):
         if versions:
             return highest_version(versions)
         else:
-            return highest_version(PYPI.package_releases(package_name))
+            try:
+                releases = PYPI.package_releases(package_name)
+            except ExpatError as e:
+                if settings.DEBUG:
+                    # TODO - convert to log
+                    print >> sys.stderr, "Threw an EXPAT error on getting version for '%s'" % package_name
+                return ""
+            return highest_version(releases)
         
     def get_or_create_package(self, package_name, version):
         data = PYPI.release_data(package_name, version)

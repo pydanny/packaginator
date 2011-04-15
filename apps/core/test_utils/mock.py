@@ -1,6 +1,10 @@
+from django.contrib.auth.models import User
+
 from package.models import Category, Package
 
 def make():
+    
+    mock_users()
     
     category, created = Category.objects.get_or_create(
         title="App",
@@ -45,3 +49,40 @@ def make():
         title="Another Test"
     )
     package.save()
+    
+def mock_users():
+    
+    user = User.objects.create_user(
+        username="user",
+        password="user",
+        email="user@example.com"
+    )
+    user.is_active = True
+    user.save()
+    
+    user = User.objects.create_user(
+        username="cleaner",
+        password="cleaner",
+        email="cleaner@example.com"
+    )
+    user.is_active = True    
+    user.save()
+
+    user = User.objects.create_user(
+        username="staff",
+        password="staff",
+        email="staff@example.com"
+    )
+    user.is_active = True
+    user.is_staff = True
+    user.save()
+    
+    user = User.objects.create_user(
+        username="admin",
+        password="admin",
+        email="admin@example.com"
+    )
+    user.is_active = True
+    user.is_staff = True
+    user.is_superuser = True    
+    user.save()    

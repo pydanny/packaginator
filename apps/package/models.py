@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
@@ -26,7 +27,7 @@ repo_url_help_text = settings.PACKAGINATOR_HELP_TEXT['REPO_URL']
 pypi_url_help_text = settings.PACKAGINATOR_HELP_TEXT['PYPI_URL']
 category_help_text = settings.PACKAGINATOR_HELP_TEXT['CATEGORY']
 
-
+logger = logging.getLogger()
 
 class Category(BaseModel):
     
@@ -54,7 +55,6 @@ class Package(BaseModel):
     repo_forks      = models.IntegerField(_("repo forks"), default=0)
     repo_commits    = models.IntegerField(_("repo commits"), default=0)
     pypi_url        = models.URLField(_("PyPI slug"), help_text=pypi_url_help_text, blank=True, default='')
-    related_packages    = models.ManyToManyField("self", blank=True)
     participants    = models.TextField(_("Participants"),
                         help_text="List of collaborats/participants on the project", blank=True)
     usage           = models.ManyToManyField(User, blank=True)
@@ -115,9 +115,16 @@ class Package(BaseModel):
         # FetchModels should be things defined in settings.PACKAGE_EXTENDERS
         # TODO - this is dirt slow. Need to figure out how to speed it up
         for obj_name in dir(self):
-            obj = getattr(self, obj_name, None)
-            if isinstance(obj, FetchModel):
-                obj.fetch_metadata()
+            try:            
+                obj = getattr(self, obj_name, None)
+                if isinstance(obj, FetchModel):
+                    obj.fetch_metadata()
+            except ObjectDoesNotExist:
+                # TODO - maybe add the object here?
+                message = "object '%s' does not exist for package '%s'" % (obj_name, self.slug)
+                logger.warning(message)
+                if settings.DEBUG:
+                    print >> sys.stderr, message
         
         self.repo.fetch_metadata(self)
         signal_fetch_latest_metadata.send(sender=self)

@@ -1,22 +1,18 @@
 # TODO - cleanup regex to do proper string subs
 
-import logging
 import os
 import re
 import sys
-from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 from django.core.exceptions import ObjectDoesNotExist
 
 from distutils.version import LooseVersion as versioner
 
-from core.fields import CreationDateTimeField, ModificationDateTimeField
 from core.models import BaseModel, FetchModel
 from package.models import Package
 from pypackage.pypi import fetch_releases

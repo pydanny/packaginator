@@ -120,7 +120,8 @@
                     {% for grid_package in grid_packages %}
                         <td>
                             {% if grid_package.package.pypi_version %}
-                                {{ grid_package.package.pypi_downloads|default:"n/a" }}
+                                {# TODO replace this with something more dynamic #}
+                                {{ grid_package.package.pypackage.pypi_downloads|default:"n/a" }}
                             {% else %}
                                 n/a
                             {% endif %}

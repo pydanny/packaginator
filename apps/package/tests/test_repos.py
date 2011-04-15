@@ -5,6 +5,7 @@ from django.test import TestCase
 
 from package.repos.bitbucket import repo_handler as bitbucket_handler
 from package.repos.github import repo_handler as github_handler
+from package.repos.unsupported import repo_handler as unsupported_handler
 #from package.repos.sourceforge import repo_handler as sourceforge_handler
 from package.models import Commit, Package, Category
 
@@ -68,13 +69,28 @@ class TestGithubRepo(BaseBase):
         package = github_handler.fetch_metadata(self.package)
         self.assertEqual(package.repo_description, "Official clone of the Subversion repository.")
         self.assertTrue(package.repo_watchers > 100)
+        
+class TestUnsupportedRepo(BaseBase):
+    
+    def setUp(self):
+        super(TestUnsupportedRepo, self).setUp()
+        self.package = Package.objects.create(
+            title="Django",
+            slug="django",
+            repo_url="https://example.com",
+            category=self.category
+        )
+    
+    def test_fetch_commits(self):
+        self.assertEqual(Commit.objects.count(), 0)
+        unsupported_handler.fetch_commits(self.package)
+        self.assertEqual(Commit.objects.count(), 0)
+        
+    def test_fetch_metadata(self):
+        package = unsupported_handler.fetch_metadata(self.package)
+        self.assertEqual(package.repo_description, "")
+        self.assertEqual(package.repo_watchers, 0)
 
-        # test what happens when setting up an unsupported repo
-        self.package.repo_url = "https://example.com"
-        self.package.fetch_metadata()
-        self.assertEqual(self.package.repo_description, "")
-        self.assertEqual(self.package.repo_watchers, 0)
-        self.package.fetch_commits()    
 
 
 if settings.LAUNCHPAD_ACTIVE:
