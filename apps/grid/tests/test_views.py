@@ -5,7 +5,7 @@ from django.test import TestCase
 
 from grid.models import Grid, Element, Feature, GridPackage
 from grid.tests.mock import make as grid_make
-from package.models import Package
+from package.models import Category, Package
 
 class FunctionalGridTest(TestCase):
     
@@ -186,7 +186,8 @@ class FunctionalGridTest(TestCase):
         self.assertEqual(response.status_code, 404)
 
 
-    def test_add_grid_package_view(self):
+    def test_add_grid_package_view(self):        
+
         url = reverse('add_grid_package', kwargs={'grid_slug': 'testing'})
         response = self.client.get(url)
         
@@ -200,15 +201,23 @@ class FunctionalGridTest(TestCase):
         self.assertTemplateUsed(response, 'grid/add_grid_package.html')
 
         # Test form post for existing grid package
+        supertester_package = Package.objects.get(slug="supertester")        
         response = self.client.post(url, {
-            'package': 2,
+            'package': supertester_package.id,
         })
         self.assertContains(response, 
                             '&#39;Supertester&#39; is already in this grid.')
+        
+        # fetch another package
+        anothertest_package = Package.objects.get(slug="another-test") 
+        
+        # Nuke all GridPackages related to this test package
+        GridPackage.objects.filter(package=anothertest_package).delete()
+                            
         # Test form post for new grid package
         count = GridPackage.objects.count()
         response = self.client.post(url, {
-            'package': 4,
+            'package': anothertest_package.id,
         }, follow=True)
         self.assertEqual(GridPackage.objects.count(), count + 1)
         self.assertContains(response, 'Another Test')
@@ -234,7 +243,7 @@ class FunctionalGridTest(TestCase):
             'title': 'Test package',
             'slug': 'test-package',
             'pypi_url': 'http://pypi.python.org/pypi/mogo/0.1.1',
-            'category': 1 
+            'category': Category.objects.all()[0].id 
         }, follow=True)
         self.assertEqual(Package.objects.count(), count + 1)
         self.assertContains(response, 'Test package')

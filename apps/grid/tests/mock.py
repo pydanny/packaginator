@@ -54,7 +54,7 @@ def make():
 
     gp, created = GridPackage.objects.get_or_create(
         grid=grid2,
-        package=package3,
+        package=package2,
     )
     gp.save()
     

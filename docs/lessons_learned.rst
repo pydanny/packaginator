@@ -81,5 +81,39 @@ OS Hackathon 2
 ==============
 
  * Pick some operating systems to support and stick with them. If someone wants to use an obscure operating system, don't spend any time supporting them. Operating system ninjas should be able to figure out this stuff on their own.
+
+Package Refactor
+================
  
  * Fixtures are useful but break down in complex changes. Better to use make/mock scripts to create test data. More work up front but less agony later.
+ 
+For example, this is not good and if your fixtures change even a little will break::
+ 
+    # Test form post for existing grid package
+    response = self.client.post(url, {
+        'package': 2,
+    })
+    self.assertContains(response, 
+            '&#39;Supertester&#39; is already in this grid.')
+    # Test form post for new grid package
+    count = GridPackage.objects.count()
+    response = self.client.post(url, {
+        'package': 4,
+    }, follow=True)
+    
+This with carefully fetched Packages can be counted on to work::
+
+    # Test form post for existing grid package
+    supertester_package = Package.objects.get(slug="supertester")        
+    response = self.client.post(url, {
+        'package': supertester_package.id,
+    })
+    self.assertContains(response, 
+                        '&#39;Supertester&#39; is already in this grid.')
+                    
+    # Test form post for new grid package
+    count = GridPackage.objects.count()
+    anothertest_package = Package.objects.get(slug="another-test")
+    response = self.client.post(url, {
+        'package': 4,
+    }, follow=True)
