@@ -26,32 +26,34 @@ class FunctionalGridTest(TestCase):
         self.assertTemplateUsed(response, 'grid/grid_detail2.html')
 
     def test_grid_detail_feature_view(self):
+        grid = Grid.objects.get(slug="testing")
+        feature = grid.feature_set.all()[0]
         url = reverse('grid_detail_feature',
-                      kwargs={'slug':'testing',
-                              'feature_id':'1',
+                      kwargs={'slug':grid.slug,
+                              'feature_id':feature.id,
                               'bogus_slug':'508-compliant'})
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, feature.title)
         self.assertTemplateUsed(response, 'grid/grid_detail_feature.html')
 
     def test_grid_detail_feature_view_contents(self):
+        grid = Grid.objects.get(slug="testing")
+        feature = grid.feature_set.all()[0]
         url = reverse('grid_detail_feature',
-                      kwargs={'slug':'testing',
-                              'feature_id':'1',
+                      kwargs={'slug':grid.slug,
+                              'feature_id':feature.id,
                               'bogus_slug':'508-compliant'})
         response = self.client.get(url)
         self.assertContains(response, '<a href="/">home</a>')
         self.assertContains(response, '<a href="/grids/">grids</a>')
         self.assertContains(response, '<a href="/grids/g/testing/">Testing</a>')
-        self.assertContains(response, 'Has tests?')
-        self.assertContains(response,
-                            '<a href="/packages/p/testability/">Testability')
-        self.assertContains(response,
-                            '<a href="/packages/p/supertester/">Supertester')
-        self.assertContains(response,
-                            '<td class="clickable" id="element-f1-p1"><img')
-        self.assertNotContains(response,
-                            '<td class="clickable" id="element-f1-p2"><img')
+        self.assertContains(response, feature.title)
+        for gp in grid.gridpackage_set.all():
+            package = gp.package
+            test_string1 = '<a href="/packages/p/%s/">%s' % (package.slug, package.title)
+            self.assertContains(response, test_string1)
+            test_string2 = '<td class="clickable" id="element-f%s-p%s">' % (feature.id, package.id)
+            self.assertContains(response, test_string2)            
 
     def test_add_grid_view(self):
         url = reverse('add_grid')
@@ -144,6 +146,8 @@ class FunctionalGridTest(TestCase):
         self.assertContains(response, 'TEST TITLE')
 
     def test_delete_feature_view(self):
+        # TODO - add permissions to core_mock
+        
         count = Feature.objects.count()
         
         # Since this user doesn't have the appropriate permissions, none of the
