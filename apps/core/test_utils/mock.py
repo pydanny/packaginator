@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, Permission, User
 
 from package.models import Category, Package
 
@@ -86,3 +86,19 @@ def mock_users():
     user.is_staff = True
     user.is_superuser = True    
     user.save()    
+
+    """
+    perm1 = Permission.objects.create(codename='delete_gridpackage',
+            content_type__app_label='grid')    
+    perm1.save()
+
+    perm2 = Permission.objects.create(codename='delete_feature',
+            content_type__app_label='grid')    
+    perm2.save()
+
+
+    group = Group.objects.create(
+        name = "Moderators",
+    )
+    group.save()
+    """
