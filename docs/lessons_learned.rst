@@ -4,6 +4,19 @@ Lessons Learned
 
 Some of these are common sense, and others we learned during the events in question.
 
+DjangoDash 2010
+===============
+
+ * Fixtures are a must in early development. The corollary to this is don't stick with them for too long.
+ 
+ * Do some research ahead of time.
+ 
+ * Get it working and then optimize
+ 
+ * Plan out system architecture in advance
+ 
+ * Once started, share your ideas with someone else
+
 DjangoCon 2010
 ==============
 
