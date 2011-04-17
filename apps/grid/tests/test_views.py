@@ -1,15 +1,16 @@
 from django.conf import settings
-from django.test import TestCase
-from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User, Permission
+from django.core.urlresolvers import reverse
+from django.test import TestCase
 
 from grid.models import Grid, Element, Feature, GridPackage
-from package.models import Package
+from grid.tests.mock import make as grid_make
+from package.models import Category, Package
 
 class FunctionalGridTest(TestCase):
-    fixtures = ['test_initial_data.json']
     
     def setUp(self):
+        grid_make()
         settings.RESTRICT_GRID_EDITORS = False
     
     def test_grid_list_view(self):
@@ -25,32 +26,34 @@ class FunctionalGridTest(TestCase):
         self.assertTemplateUsed(response, 'grid/grid_detail2.html')
 
     def test_grid_detail_feature_view(self):
+        grid = Grid.objects.get(slug="testing")
+        feature = grid.feature_set.all()[0]
         url = reverse('grid_detail_feature',
-                      kwargs={'slug':'testing',
-                              'feature_id':'1',
+                      kwargs={'slug':grid.slug,
+                              'feature_id':feature.id,
                               'bogus_slug':'508-compliant'})
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, feature.title)
         self.assertTemplateUsed(response, 'grid/grid_detail_feature.html')
 
     def test_grid_detail_feature_view_contents(self):
+        grid = Grid.objects.get(slug="testing")
+        feature = grid.feature_set.all()[0]
         url = reverse('grid_detail_feature',
-                      kwargs={'slug':'testing',
-                              'feature_id':'1',
+                      kwargs={'slug':grid.slug,
+                              'feature_id':feature.id,
                               'bogus_slug':'508-compliant'})
         response = self.client.get(url)
         self.assertContains(response, '<a href="/">home</a>')
         self.assertContains(response, '<a href="/grids/">grids</a>')
         self.assertContains(response, '<a href="/grids/g/testing/">Testing</a>')
-        self.assertContains(response, 'Has tests?')
-        self.assertContains(response,
-                            '<a href="/packages/p/testability/">Testability')
-        self.assertContains(response,
-                            '<a href="/packages/p/supertester/">Supertester')
-        self.assertContains(response,
-                            '<td class="clickable" id="element-f1-p1"><img')
-        self.assertNotContains(response,
-                            '<td class="clickable" id="element-f1-p2"><img')
+        self.assertContains(response, feature.title)
+        for gp in grid.gridpackage_set.all():
+            package = gp.package
+            test_string1 = '<a href="/packages/p/%s/">%s' % (package.slug, package.title)
+            self.assertContains(response, test_string1)
+            test_string2 = '<td class="clickable" id="element-f%s-p%s">' % (feature.id, package.id)
+            self.assertContains(response, test_string2)            
 
     def test_add_grid_view(self):
         url = reverse('add_grid')
@@ -143,6 +146,8 @@ class FunctionalGridTest(TestCase):
         self.assertContains(response, 'TEST TITLE')
 
     def test_delete_feature_view(self):
+        # TODO - add permissions to core_mock
+        
         count = Feature.objects.count()
         
         # Since this user doesn't have the appropriate permissions, none of the
@@ -185,7 +190,8 @@ class FunctionalGridTest(TestCase):
         self.assertEqual(response.status_code, 404)
 
 
-    def test_add_grid_package_view(self):
+    def test_add_grid_package_view(self):        
+
         url = reverse('add_grid_package', kwargs={'grid_slug': 'testing'})
         response = self.client.get(url)
         
@@ -199,15 +205,23 @@ class FunctionalGridTest(TestCase):
         self.assertTemplateUsed(response, 'grid/add_grid_package.html')
 
         # Test form post for existing grid package
+        supertester_package = Package.objects.get(slug="supertester")        
         response = self.client.post(url, {
-            'package': 2,
+            'package': supertester_package.id,
         })
         self.assertContains(response, 
                             '&#39;Supertester&#39; is already in this grid.')
+        
+        # fetch another package
+        anothertest_package = Package.objects.get(slug="another-test") 
+        
+        # Nuke all GridPackages related to this test package
+        GridPackage.objects.filter(package=anothertest_package).delete()
+                            
         # Test form post for new grid package
         count = GridPackage.objects.count()
         response = self.client.post(url, {
-            'package': 4,
+            'package': anothertest_package.id,
         }, follow=True)
         self.assertEqual(GridPackage.objects.count(), count + 1)
         self.assertContains(response, 'Another Test')
@@ -233,7 +247,7 @@ class FunctionalGridTest(TestCase):
             'title': 'Test package',
             'slug': 'test-package',
             'pypi_url': 'http://pypi.python.org/pypi/mogo/0.1.1',
-            'category': 1 
+            'category': Category.objects.all()[0].id 
         }, follow=True)
         self.assertEqual(Package.objects.count(), count + 1)
         self.assertContains(response, 'Test package')
@@ -268,31 +282,33 @@ class FunctionalGridTest(TestCase):
         self.assertTemplateUsed(response, 'grid/grid_archive.html')
 
 class RegressionGridTest(TestCase):
-    fixtures = ['test_initial_data.json']
 
     def setUp(self):
+        grid_make()
         settings.RESTRICT_GRID_EDITORS = False
     
     def test_edit_element_view_for_nonexistent_elements(self):
         """Make sure that attempts to edit nonexistent elements succeed.
         
         """
-        # Delete the element for the sepcified feature and package.        
-        element, created = Element.objects.get_or_create(feature=1, grid_package=1)
+        # Delete the element for the specified feature and package.                
+        feature = Feature.objects.all()[0]
+        grid_package = GridPackage.objects.all()[0]        
+        element, created = Element.objects.get_or_create(feature=feature, grid_package=grid_package)
         element.delete()
         
         # Log in the test user and attempt to edit the element.
         self.assertTrue(self.client.login(username='user', password='user'))
 
-        url = reverse('edit_element', kwargs={'feature_id': '1', 'package_id': '1'})
+        url = reverse('edit_element', kwargs={'feature_id': feature.id, 'package_id': grid_package.id})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'grid/edit_element.html')
 
 class GridPermissionTest(TestCase):
-    fixtures = ['test_initial_data.json']
 
     def setUp(self):
+        grid_make()
         settings.RESTRICT_GRID_EDITORS = True
         self.test_add_url = reverse('add_grid')
         self.test_edit_url = reverse('edit_grid', kwargs={'slug':'testing'})
@@ -323,9 +339,9 @@ class GridPermissionTest(TestCase):
 
 
 class GridPackagePermissionTest(TestCase):
-    fixtures = ['test_initial_data.json']
 
     def setUp(self):
+        grid_make()        
         settings.RESTRICT_GRID_EDITORS = True
         self.test_add_url = reverse('add_grid_package', 
                                     kwargs={'grid_slug':'testing'})
@@ -373,9 +389,9 @@ class GridPackagePermissionTest(TestCase):
         self.assertEqual(response.status_code, 302)
 
 class GridFeaturePermissionTest(TestCase):
-    fixtures = ['test_initial_data.json']
 
     def setUp(self):
+        grid_make()        
         settings.RESTRICT_GRID_EDITORS = True
         self.test_add_url = reverse('add_feature',
                                     kwargs={'grid_slug':'testing'})
@@ -418,9 +434,9 @@ class GridFeaturePermissionTest(TestCase):
         self.assertEqual(response.status_code, 302)
 
 class GridElementPermissionTest(TestCase):
-    fixtures = ['test_initial_data.json']
 
     def setUp(self):
+        grid_make()        
         settings.RESTRICT_GRID_EDITORS = True
         self.test_edit_url = reverse('edit_element',
                                      kwargs={'feature_id':'1',

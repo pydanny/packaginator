@@ -51,6 +51,14 @@ urlpatterns = patterns("",
     
 )
 
+for extender in settings.PACKAGE_EXTENDERS:
+    check = __import__(extender)
+    if hasattr(check, "urls"):
+        prefix = extender.replace('package','')   
+        urlpatterns += patterns('',
+            url(r"^%s/" % prefix, include("%s.urls" % extender)),         
+        )
+
 from apiv1.api import Api
 from apiv1.resources import (
                     GotwResource, DpotwResource,
@@ -71,6 +79,7 @@ v1_api.register(UserResource())
 urlpatterns += patterns('',
     url(r"^api/", include(v1_api.urls)), 
 )
+
 
 
 if settings.SERVE_MEDIA:

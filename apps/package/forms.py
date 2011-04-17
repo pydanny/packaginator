@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.validators import URLValidator
 from django.forms import ModelForm
 from django.template.defaultfilters import slugify
@@ -5,6 +6,8 @@ from django.template.defaultfilters import slugify
 from package.models import Package, PackageExample
 
 class PackageForm(ModelForm):
+    
+    # TODO - add loop through PACKAGE_EXTENDER forms
     
     def clean_slug(self):
         return self.cleaned_data['slug'].lower()

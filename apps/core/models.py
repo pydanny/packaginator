@@ -7,8 +7,14 @@ class BaseModel(models.Model):
     """ Base abstract base class to give creation and modified times """
     created     = CreationDateTimeField(_('created'))
     modified    = ModificationDateTimeField(_('modified'))
-    
 
     class Meta:
         abstract = True
 
+class FetchModel(BaseModel):
+    
+    class Meta:
+        abstract = True
+        
+    def fetch_metadata(self):
+        raise NotImplemented("FetchModels need to have a fetch method")

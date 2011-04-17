@@ -3,13 +3,16 @@ from django.contrib.auth.models import User, Permission
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
+from core.test_utils.mock import make as core_make
+
 from package.models import Category, Package, PackageExample
 
 
 class FunctionalPackageTest(TestCase):
-    fixtures = ['test_initial_data.json']
-
+    #fixtures = ['test_initial_data.json']
+    
     def setUp(self):
+        core_make()
         settings.RESTRICT_PACKAGE_EDITORS = False
         settings.RESTRICT_GRID_EDITORS = True
 
@@ -120,8 +123,15 @@ class FunctionalPackageTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(PackageExample.objects.count(), count + 1)
 
-    def test_edit_example_view(self):
-        e = PackageExample.objects.all()[0]
+    def test_edit_example_view(self):        
+        package = Package.objects.get(slug='testability')
+        example, created = PackageExample.objects.get_or_create(
+            package = package,
+            title="fun title",
+            url = "http://example.com"
+        )
+        example.save()
+        e = PackageExample.objects.get(title="fun title")
         id = e.pk
         url = reverse('edit_example', kwargs={'slug': e.package.slug,
             'id': e.pk})
@@ -171,9 +181,9 @@ class RegressionPackageTest(TestCase):
     pass
 
 class PackagePermissionTest(TestCase):
-    fixtures = ['test_initial_data.json']
 
     def setUp(self):
+        core_make()
         settings.RESTRICT_PACKAGE_EDITORS = True
         self.test_add_url = reverse('add_package')
         self.test_edit_url = reverse('edit_package',

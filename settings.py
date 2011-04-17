@@ -152,7 +152,6 @@ PROJECT_APPS = [
     "searchv1",
     "apiv1",
     "feeds",
-    "pypi",
 ]
 
 PREREQ_APPS = [
@@ -232,7 +231,7 @@ EMAIL_DEBUG = DEBUG
 
 ROOT_URLCONF = "packaginator.urls"
 
-SECRET_KEY = "ud%a+c#@@d5k!t_)mpw!+58fztyhk_sq%c5s0p5_je-wixy#$k"
+SECRET_KEY = "CHANGE-THIS-KEY-TO-SOMETHING-ELSE"
 
 URCHIN_ID = ""
 
@@ -289,8 +288,7 @@ RESTRICT_PACKAGE_EDITORS = True
 # only django admins can delete
 RESTRICT_GRID_EDITORS = True
 
-
-
+PACKAGE_EXTENDERS = ["pypackage",]
 
 CELERYD_TASK_TIME_LIMIT = 300
 LAUNCHPAD_ACTIVE = False
@@ -304,13 +302,26 @@ try:
     from local_settings import *
 except ImportError:
     pass
-
+    
+# You can remove this after you change your SECRET_KEY
+if SECRET_KEY == "CHANGE-THIS-KEY-TO-SOMETHING-ELSE":
+    raise Exception('You must change your SECRET_KEY settings in '
+            'local_settings.py.')
+    
 if LOCAL_INSTALLED_APPS:
     INSTALLED_APPS.extend(LOCAL_INSTALLED_APPS)
 
 SUPPORTED_REPO.extend(["bitbucket", "github"])
 if LAUNCHPAD_ACTIVE:
     SUPPORTED_REPO += ["launchpad"]
+    
+for extender in PACKAGE_EXTENDERS:
+    if not extender.endswith("package"):
+        raise Exception("The name of a package extenders must end with 'package'."
+            " This fails on '%s'" % extender)
+
+if PACKAGE_EXTENDERS:
+    INSTALLED_APPS.extend(PACKAGE_EXTENDERS)
 
 try:
     import djcelery

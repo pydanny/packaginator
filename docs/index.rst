@@ -24,6 +24,7 @@ Contents:
    introduction
    license   
    install
+   package_extenders
    celery
    troubleshooting
    faq   

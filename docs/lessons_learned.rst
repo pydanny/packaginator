@@ -4,6 +4,19 @@ Lessons Learned
 
 Some of these are common sense, and others we learned during the events in question.
 
+DjangoDash 2010
+===============
+
+ * Fixtures are a must in early development. The corollary to this is don't stick with them for too long.
+ 
+ * Do some research ahead of time.
+ 
+ * Get it working and then optimize
+ 
+ * Plan out system architecture in advance
+ 
+ * Once started, share your ideas with someone else
+
 DjangoCon 2010
 ==============
 
@@ -76,3 +89,44 @@ Pull Requests
 * Each time someone submits a pull request, ask them if they've run the full test suite. Yeah, it's repetitive but they'll thank you for it.
 
 * If someone submits a broken pull request, see if you can work out the issue with them. If the problem is not easily corrected, ask them to fix the problem and resubmit the pull request.
+
+OS Hackathon 2
+==============
+
+* Pick some operating systems to support and stick with them. If someone wants to use an obscure operating system, don't spend any time supporting them. Operating system ninjas should be able to figure out this stuff on their own.
+
+Package Refactor
+================
+ 
+* Fixtures are useful but break down in complex changes. Better to use make/mock scripts to create test data. More work up front but less agony later.
+ 
+For example, this is not good and if your fixtures change even a little will break::
+ 
+    # Test form post for existing grid package
+    response = self.client.post(url, {
+        'package': 2,
+    })
+    self.assertContains(response, 
+            '&#39;Supertester&#39; is already in this grid.')
+    # Test form post for new grid package
+    count = GridPackage.objects.count()
+    response = self.client.post(url, {
+        'package': 4,
+    }, follow=True)
+    
+This with carefully fetched Packages can be counted on to work::
+
+    # Test form post for existing grid package
+    supertester_package = Package.objects.get(slug="supertester")        
+    response = self.client.post(url, {
+        'package': supertester_package.id,
+    })
+    self.assertContains(response, 
+                        '&#39;Supertester&#39; is already in this grid.')
+                    
+    # Test form post for new grid package
+    count = GridPackage.objects.count()
+    anothertest_package = Package.objects.get(slug="another-test")
+    response = self.client.post(url, {
+        'package': 4,
+    }, follow=True)

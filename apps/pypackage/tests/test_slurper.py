@@ -1,8 +1,11 @@
+# TODO - get this to test off of pypackages instead of package
+
 from django.template.defaultfilters import slugify
 from django.test import TestCase
 
-from package.models import Package, Version
-from pypi.slurper import Slurper
+from package.models import Package
+from pypackage.models import PyPackage, Version
+from pypackage.slurper import Slurper
 
 TEST_PACKAGE_NAME = 'Django'
 TEST_PACKAGE_VERSION = '1.3'
@@ -48,4 +51,4 @@ class SlurpAllTests(TestCase):
         # fetch the package for testing
         package = Package.objects.get(title=TEST_PACKAGE_REPO_NAME)
         
-        self.assertTrue(package.pypi_downloads > 1000)
+        self.assertTrue(package.pypackage.pypi_downloads > 1000, "package.pypackage.pypi_downloads is only %s" % package.pypackage.pypi_downloads)
