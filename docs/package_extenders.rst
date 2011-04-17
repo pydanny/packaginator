@@ -2,6 +2,18 @@
 Package Extenders
 =================
 
+Critical Issues
+----------------
+
+ * Need to handle package add/edit forms
+ * Add template grid/package bits
+ * Get apiv2 in place since apiv1 is broken hard
+ * Fix last 8 grid tests
+ * Manually check all templates
+ 
+How it works
+------------
+
 Default setting::
 
     settings.PACKAGE_EXTENDERS = ["pypackage", "repopackage", "examplepackage", ]
@@ -10,7 +22,7 @@ Originally Packaginator packages just dealt with packages stored in the Python P
  
 The interface system is described as follows:
 
- * forms
+ * forms (TODO)
  
     * Can provide extra fields for use in the add/edit PackageForm
     * Can provide add/edit forms for use on Package detail page to capture extra data. e.g. examples.
@@ -43,7 +55,7 @@ The interface system is described as follows:
     * Must have a test suite. Do simple check
     * Human factor: Don't list them officially unless they have some code coverage
  
- * templates
+ * templates (TODO)
  
     * provide style guide
     * allow for inlines/blocks that can be looped through if named correctly. Sample
@@ -59,4 +71,4 @@ The interface system is described as follows:
  * views
  
     * standard
-    * Added thanks to urls.py monkeying
+    * Added thanks to urls.py
