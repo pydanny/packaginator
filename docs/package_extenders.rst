@@ -8,7 +8,7 @@ Default setting::
 
 Originally Packaginator packages just dealt with packages stored in the Python Package Index (PyPI) and with extra data provided by common repo systems like Bitbucket, Github and Launchpad. The purpose of this setting is to remove the tight coupling used for that and allow for Packages. This abstraction is designed to allow Django apps that follow a standard interface to be plugged seamlessly into Packaginator, and unplugged - all without additional wiring in regards to settings, templates, and urls.
  
-The interface system is described as follows::
+The interface system is described as follows:
 
  * forms
  
@@ -17,9 +17,9 @@ The interface system is described as follows::
  
  * models 
  
-    * Must inherit from BaseModel so we know we have the following fields:
+    * Must inherit from `core.models.BaseModel` or `core.models.FetchModel` so we know we have the following fields:
     
-        * `packaginator_package = models.OneToOneField(Package, related_name='ADD-SOMETHING')`
+        * `packaginator_package=models.OneToOneField(Package, related_name='ADD-SOMETHING')`
         * `created`
         * `modified`
     

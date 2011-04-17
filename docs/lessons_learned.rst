@@ -93,12 +93,12 @@ Pull Requests
 OS Hackathon 2
 ==============
 
- * Pick some operating systems to support and stick with them. If someone wants to use an obscure operating system, don't spend any time supporting them. Operating system ninjas should be able to figure out this stuff on their own.
+* Pick some operating systems to support and stick with them. If someone wants to use an obscure operating system, don't spend any time supporting them. Operating system ninjas should be able to figure out this stuff on their own.
 
 Package Refactor
 ================
  
- * Fixtures are useful but break down in complex changes. Better to use make/mock scripts to create test data. More work up front but less agony later.
+* Fixtures are useful but break down in complex changes. Better to use make/mock scripts to create test data. More work up front but less agony later.
  
 For example, this is not good and if your fixtures change even a little will break::
  

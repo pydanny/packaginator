@@ -52,7 +52,7 @@ urlpatterns = patterns("",
 )
 
 for extender in settings.PACKAGE_EXTENDERS:
-    check = __import__(extender) 
+    check = __import__(extender)
     if hasattr(check, "urls"):
         prefix = extender.replace('package','')   
         urlpatterns += patterns('',

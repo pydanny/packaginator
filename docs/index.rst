@@ -22,6 +22,7 @@ Contents:
    :maxdepth: 1
 
    introduction
+   package_extenders
    api_docs
    celery
    contributing
