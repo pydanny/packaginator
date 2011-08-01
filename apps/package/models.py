@@ -16,7 +16,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from distutils.version import LooseVersion as versioner
 
-from core.models import BaseModel
+from core.models import BaseModel, FetchModel
 from package.fields import CreationDateTimeField, ModificationDateTimeField
 from package.repos import github
 from package.pypi import fetch_releases
@@ -133,8 +133,30 @@ class Package(BaseModel):
                 weeks[age_weeks] += 1
 
         return ','.join(map(str,reversed(weeks)))
-    
+        
     def fetch_metadata(self, *args, **kwargs):
+        """ TODO - get this working """
+
+        # run fetch() method on any FetchModels attached to this.
+        # FetchModels should be things defined in settings.PACKAGE_EXTENDERS
+        # TODO - this is dirt slow. Need to figure out how to speed it up
+        for obj_name in dir(self):
+            try:            
+                obj = getattr(self, obj_name, None)
+                if isinstance(obj, FetchModel):
+                    obj.fetch_metadata()
+            except ObjectDoesNotExist:
+                # TODO - maybe add the object here?
+                message = "object '%s' does not exist for package '%s'" % (obj_name, self.slug)
+                logger.warning(message)
+                if settings.DEBUG:
+                    print >> sys.stderr, message
+
+        self.repo.fetch_metadata(self)
+        signal_fetch_latest_metadata.send(sender=self)
+        self.save()
+    
+    def old_fetch_metadata(self, *args, **kwargs):
         
         # Get the downloads from pypi
         if self.pypi_url.strip() and self.pypi_url != "http://pypi.python.org/pypi/":

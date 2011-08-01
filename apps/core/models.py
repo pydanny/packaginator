@@ -11,4 +11,11 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
+        
+class FetchModel(BaseModel):
 
+    class Meta:
+        abstract = True
+
+    def fetch_metadata(self):
+        raise NotImplemented("FetchModels need to have a fetch method")
