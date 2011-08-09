@@ -196,7 +196,7 @@ PREREQ_APPS = [
     'djcelery',
     
     # Sentry error logging:
-    'sentry.client',
+    #'sentry.client',
 ]
 
 INSTALLED_APPS = PREREQ_APPS + PROJECT_APPS
