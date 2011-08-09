@@ -16,7 +16,7 @@ django-uni-form==0.7.0
 django-announcements==0.1.2
 django-pagination==1.0.7
 django-notification==0.1.4
-idios==0.1.dev6
+#idios==0.1.dev6
 
 # grabbed from project.txt
 django_extensions==0.4.1
@@ -43,6 +43,10 @@ django-kombu==0.9.2
 
 --extra-index-url=http://dist.pinaxproject.com/dev/
 django-mailer==0.2a1.dev1
-Pinax==0.9a1
+#Pinax==0.9a1
 python-openid==2.2.5
 django-openid==0.2.3.dev1
+
+# special migration fixes
+-e git://github.com/pydanny/pinax#egg=pinax-0.9a1-signalfix
+-e git://github.com/pydanny/idios#egg=idios-0.2a1.dev3-signalfix
