@@ -212,7 +212,7 @@ class Version(BaseModel):
     package = models.ForeignKey(Package, blank=True, null=True)
     number = models.CharField(_("Version"), max_length="100", default="", blank="")
     downloads = models.IntegerField(_("downloads"), default=0)
-    license = models.CharField(_("license"), max_length="100")
+    license = models.CharField(_("license"), max_length="100", blank=True, null=True)
     hidden = models.BooleanField(_("hidden"), default=False)    
     
     objects = VersionManager()
