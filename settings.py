@@ -105,7 +105,7 @@ MIDDLEWARE_CLASSES = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "reversion.middleware.RevisionMiddleware",    
-    "django_openid.consumer.SessionConsumer",
+    #"django_openid.consumer.SessionConsumer",
     "django.contrib.messages.middleware.MessageMiddleware",
     "pinax.apps.account.middleware.LocaleMiddleware",
     "pagination.middleware.PaginationMiddleware",
@@ -173,7 +173,7 @@ PREREQ_APPS = [
     "staticfiles",
     "mailer",
     "uni_form",
-    "django_openid",
+    #"django_openid",
     "ajax_validation",
     "timezones",
     "emailconfirmation",
@@ -290,8 +290,6 @@ RESTRICT_PACKAGE_EDITORS = True
 # if set to False  any auth user can add/modify grids
 # only django admins can delete
 RESTRICT_GRID_EDITORS = True
-
-
 
 
 CELERYD_TASK_TIME_LIMIT = 300
