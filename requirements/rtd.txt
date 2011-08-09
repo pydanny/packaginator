@@ -49,4 +49,4 @@ django-openid==0.2.3.dev1
 
 # special migration fixes
 -e git://github.com/pydanny/pinax#egg=pinax-0.9a1-signalfix
--e git://github.com/pydanny/idios#egg=idios-0.2a1.dev3-signalfix
+-e git://github.com/audreyr/idios#egg=idios-0.1.dev6-signalfix
